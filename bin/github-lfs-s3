@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'logger'
+require 'github-lfs-s3/application'
+require 'github-lfs-s3/github'
+require 'aws-sdk-s3'
+
+raise 'S3_BUCKET required' unless (bucket = ENV['S3_BUCKET'])
+raise 'REPO required' unless (repo = ENV['REPO'])
+
+GithubLfsS3::Application.run!(
+  bucket: Aws::S3::Bucket.new(
+    name: bucket,
+    client: Aws::S3::Client.new(
+      endpoint: 'https://s3-accelerate.amazonaws.com'
+    )
+  ),
+  logger: Logger.new(STDOUT),
+  auth: GithubLfsS3::Github.new(repo)
+)
