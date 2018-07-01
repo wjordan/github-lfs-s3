@@ -8,7 +8,6 @@ module GithubLfsS3
   class Application < Sinatra::Base
     configure do
       enable :logging
-      set :auth, ->(*_) { true }
       set :expires_in, 86_400
 
       set :bucket, nil
@@ -27,6 +26,7 @@ module GithubLfsS3
 
     helpers do
       def authorized?
+        return true unless settings.respond_to?(:auth)
         @auth ||= Rack::Auth::Basic::Request.new(request.env)
         return false unless
           @auth.provided? &&
@@ -45,6 +45,7 @@ module GithubLfsS3
     end
 
     post '/objects/batch', provides: 'application/vnd.git-lfs+json' do
+      logger.info "Params: #{request.body.read}"
       data = begin
         JSON.parse(request.body.tap(&:rewind).read)
       rescue JSON::ParserError

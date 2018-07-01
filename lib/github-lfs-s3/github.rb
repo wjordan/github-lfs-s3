@@ -25,8 +25,10 @@ module GithubLfsS3
 
     def access?(username, password)
       client = Octokit::Client.new(login: username, password: password)
-      permission = client.permission_level(repo, client.user.login)
+      permission = client.permission_level(repo, client.user.login)[:permission]
       %w[admin write].include?(permission)
+    rescue Octokit::Unauthorized, Octokit::OneTimePasswordRequired
+      false
     end
   end
 end

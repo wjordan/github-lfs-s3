@@ -9,6 +9,7 @@ require 'aws-sdk-s3'
 raise 'S3_BUCKET required' unless (bucket = ENV['S3_BUCKET'])
 raise 'REPO required' unless (repo = ENV['REPO'])
 
+github = GithubLfsS3::Github.new(repo)
 GithubLfsS3::Application.run!(
   bucket: Aws::S3::Bucket.new(
     name: bucket,
@@ -17,5 +18,7 @@ GithubLfsS3::Application.run!(
     )
   ),
   logger: Logger.new(STDOUT),
-  auth: GithubLfsS3::Github.new(repo)
+  auth: lambda do |username, password|
+    github.authenticate(username, password)
+  end
 )
